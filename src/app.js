@@ -4,14 +4,17 @@ const User = require("./models/user");
 const app = express();
 const { validateSignUpdata } = require("./utils/validation");
 const bcrypt = require("bcrypt");
+const cookiePaser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+const { userAuth } = require("./middlewares/auth");
 
 app.use(express.json());
+app.use(cookiePaser());
 app.post("/signup", async (req, res) => {
 	try {
 		validateSignUpdata(req);
 		const { firstName, lastName, email, password } = req.body;
 		const passwordHash = await bcrypt.hash(password, 10);
-		console.log(passwordHash);
 		const user = new User({
 			firstName,
 			lastName,
@@ -26,7 +29,7 @@ app.post("/signup", async (req, res) => {
 });
 app.post("/login", async (req, res) => {
 	try {
-		const { email, password } = req.body;
+		const { id, email, password } = req.body;
 		const user = await User.findOne({ email: email });
 		if (!email || !password) {
 			return res.status(400).send("Email and password required");
@@ -34,8 +37,10 @@ app.post("/login", async (req, res) => {
 		if (!user) {
 			throw new Error("email Id is not prsent in DB");
 		}
-		const isPasswordValid = await bcrypt.compare(password, user.password);
+		const isPasswordValid = await user.validatePassword(password);
 		if (isPasswordValid) {
+			const token = await user.getJWT();
+			res.cookie("token", token);
 			res.send("Login successfully");
 		} else {
 			throw new Error("Invalid credientials");
@@ -44,7 +49,17 @@ app.post("/login", async (req, res) => {
 		res.status(401).send(error.message);
 	}
 });
-
+app.get("/profile", userAuth, async (req, res) => {
+	try {
+		res.send(req.user);
+	} catch (error) {
+		res.status(401).send(error.message + " please login");
+	}
+});
+app.post("/sendApiConnection", userAuth, async (req, res) => {
+	console.log("sending connection");
+	res.send(req.user.firstName + "sent the connection requst sent");
+});
 app.get("/user", async (req, res) => {
 	const userEmail = req.body.email;
 	try {
@@ -108,10 +123,8 @@ app.patch("/user", async (req, res) => {
 	}
 });
 
-
 connectDB()
 	.then(() => {
-		console.log("Dtabase connected successfully");
 		app.listen(7777, () => {
 			console.log("server started sucessfully 7777");
 		});
