@@ -1,10 +1,13 @@
 const mongoose = require("mongoose");
 const validater = require("validator");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const useSchema = new mongoose.Schema(
 	{
 		firstName: {
 			type: String,
 			required: true,
+			index: true,
 		},
 		lastName: {
 			type: String,
@@ -30,11 +33,15 @@ const useSchema = new mongoose.Schema(
 		},
 		gender: {
 			type: String,
-			validate(value) {
-				if (!["male", "female", "others"].includes(value)) {
-					throw new Error("Gender data is not valid");
-				}
+			enum: {
+				values: ["male", "female", "others"],
+				message: ["{VALUE} is not supported"],
 			},
+			// validate(value) {
+			// 	if (!["male", "female", "others"].includes(value)) {
+			// 		throw new Error("Gender data is not valid");
+			// 	}
+			// },
 		},
 		photoUrl: {
 			type: String,
@@ -43,7 +50,7 @@ const useSchema = new mongoose.Schema(
 			type: String,
 			default: "I am gadigesh is the default",
 		},
-		skilts: {
+		skills: {
 			type: [String],
 		},
 	},
