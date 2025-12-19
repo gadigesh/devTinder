@@ -5,7 +5,7 @@
 	"main": "index.js",
 	"scripts": {
 		"start": "node src/app.js",
-		"dev": "nodemon src/app.js"
+		"dev": "node src/app.js"
 	},
 	"keywords": [
 		"nodejs",
@@ -15,6 +15,7 @@
 	"author": "gadigesh",
 	"license": "ISC",
 	"dependencies": {
+		"axios": "^1.13.2",
 		"bcrypt": "^6.0.0",
 		"cookie-parser": "^1.4.7",
 		"express": "^5.2.1",

@@ -1,6 +1,7 @@
 const express = require("express");
 const { userAuth } = require("../middlewares/auth");
 const ConnectionRequst = require("../models/connectionRequst");
+const User = require("../models/user");
 
 const userRouter = express();
 
@@ -53,6 +54,37 @@ userRouter.get("/feed", userAuth, async (req, res) => {
 		//his connections
 		//ignored peaople
 		//already sent the connection request
+		// skip = (page -1)*limit
+		const page = parseInt(req.query.page) || 1;
+		let limit = parseInt(req.query.limit) || 10;
+		limit = limit > 50 ? 50 : limit;
+		const loggedInUser = req.user;
+		const connectRequst = await ConnectionRequst.find({
+			$or: [
+				{
+					fromUserId: loggedInUser._id,
+				},
+				{
+					toUserId: loggedInUser._id,
+				},
+			],
+		}).select("fromUserId toUserId");
+		const hdeUsersFromFeed = new Set();
+		connectRequst.forEach((req) => {
+			hdeUsersFromFeed.add(req.fromUserId.toString());
+			hdeUsersFromFeed.add(req.toUserId.toString());
+		});
+		console.log(hdeUsersFromFeed);
+		const users = await User.find({
+			$and: [
+				// { _id: { $nin: Array.from(hdeUsersFromFeed) } },
+				{ _id: { $ne: loggedInUser._id } },
+			],
+		})
+			.select(USER_SAVED_DATA)
+			.skip((page - 1) * limit)
+			.limit(limit);
+		res.send(users);
 	} catch (error) {
 		res.status(400).send("Error" + error.message);
 	}
