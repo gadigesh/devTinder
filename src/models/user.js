@@ -18,12 +18,6 @@ const useSchema = new mongoose.Schema(
 			unique: true,
 			lowercase: true,
 			trim: true,
-			// validate(value) {
-			// 	if (!validater.isEmail(value));
-			// 	{
-			// 		throw new Error("Invalid Email address" + value);
-			// 	}
-			// },
 		},
 		password: {
 			type: String,
@@ -37,14 +31,10 @@ const useSchema = new mongoose.Schema(
 				values: ["male", "female", "others"],
 				message: ["{VALUE} is not supported"],
 			},
-			// validate(value) {
-			// 	if (!["male", "female", "others"].includes(value)) {
-			// 		throw new Error("Gender data is not valid");
-			// 	}
-			// },
 		},
-		photoUrl: {
+		photoURL: {
 			type: String,
+			default: "https://avatars.githubusercontent.com",
 		},
 		about: {
 			type: String,
@@ -58,9 +48,7 @@ const useSchema = new mongoose.Schema(
 );
 useSchema.methods.getJWT = async function () {
 	const user = this;
-	const token = await jwt.sign({ _id: user._id }, "DevTinder$250", {
-		expiresIn: "1h",
-	});
+	const token = await jwt.sign({ _id: user._id }, "DevTinder$250");
 	return token;
 };
 useSchema.methods.validatePassword = async function (passwordByUser) {

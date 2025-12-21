@@ -12,7 +12,10 @@ userRouter.get("/user/request/received", userAuth, async (req, res) => {
 		const connectionRequst = await ConnectionRequst.find({
 			toUserId: loggenInUser._id,
 			status: "interested",
-		}).populate("fromUserId", "firstName lastName about skills");
+		}).populate(
+			"fromUserId",
+			"firstName lastName about gender age skills photoURL"
+		);
 		// }).populate("fromUserId", ["firstName", "lastName"]);
 		res.json({
 			message: "Dtat fetched successfully ",
@@ -22,7 +25,7 @@ userRouter.get("/user/request/received", userAuth, async (req, res) => {
 		res.status(400).send("Error" + Error.message);
 	}
 });
-const USER_SAVED_DATA = "firstName lastName about skills";
+const USER_SAVED_DATA = "firstName lastName about skills photoURL age";
 userRouter.get("/user/connections", userAuth, async (req, res) => {
 	try {
 		const loggedInUser = req.user;
